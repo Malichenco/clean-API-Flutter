@@ -157,7 +157,7 @@ class AuthRepo extends IAuthRepo {
         FormatException(
           // tag: 'Initial login check',
           error: e.toString(),
-        ),
+        )
       );
     }
   }
