@@ -1,0 +1,2 @@
+
+enum Mode { LIVE, TEST }
