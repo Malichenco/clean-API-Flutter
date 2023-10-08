@@ -1,4 +1,4 @@
-import 'package:clean_api/clean_api.dart';
+// import 'package:clean_api/clean_api.dart';
 import 'package:equatable/equatable.dart';
 
 import 'package:Taillz/domain/auth/models/colors.dart';
@@ -10,7 +10,7 @@ class AuthState extends Equatable {
   final UserInfo userInfo;
   final List<Countries> countryList;
   final List<Language> languageList;
-  final CleanFailure failure;
+  // final CleanFailure failure;
   final bool loading;
   final bool valueChecking;
   final List<ColorsModel> colorsList;
@@ -34,7 +34,7 @@ class AuthState extends Equatable {
     UserInfo? userInfo,
     List<Countries>? countryList,
     List<Language>? languageList,
-    CleanFailure? failure,
+    // CleanFailure? failure,
     bool? loading,
     bool? valueChecking,
     List<ColorsModel>? colorsList,

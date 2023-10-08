@@ -1,4 +1,7 @@
-import 'package:clean_api/clean_api.dart';
+// import 'package:clean_api/clean_api.dart';
+import 'package:http/http.dart' as http;
+import 'package:fpdart/fpdart.dart';
+
 import 'package:email_validator/email_validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Taillz/domain/auth/i_auth_repo.dart';
@@ -10,9 +13,10 @@ import 'package:Taillz/domain/auth/models/registration.dart';
 import 'package:Taillz/domain/auth/models/user_info.dart';
 
 class AuthRepo extends IAuthRepo {
-  final cleanApi = CleanApi.instance;
+  // final cleanApi = CleanApi.instance;
+  final url = Uri.https('')
   @override
-  Future<Either<CleanFailure, UserInfo>> login({
+  Future<Either<FormatException, UserInfo>> login({
     required String email,
     required String password,
   }) async {
@@ -43,7 +47,7 @@ class AuthRepo extends IAuthRepo {
   }
 
   @override
-  Future<Either<CleanFailure, UserInfo>> getUserInfo() async {
+  Future<Either<FormatException, UserInfo>> getUserInfo() async {
     return await cleanApi.get(
       showLogs: true,
       fromData: ((json) => UserInfo.fromMap(json['payload'])),
@@ -52,7 +56,7 @@ class AuthRepo extends IAuthRepo {
   }
 
   @override
-  Future<Either<CleanFailure, Unit>> registration(
+  Future<Either<FormatException, Unit>> registration(
       Registration registration) async {
     return await cleanApi.post(
         fromData: (json) {

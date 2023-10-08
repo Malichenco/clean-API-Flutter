@@ -1,6 +1,8 @@
 // ignore_for_file: empty_catches
 
-import 'package:clean_api/clean_api.dart';
+// import 'package:clean_api/clean_api.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:Taillz/application/auth/auth_state.dart';
@@ -23,7 +25,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       : super(AuthState(
             userInfo: UserInfo.empty(),
             loading: false,
-            failure: CleanFailure.none(),
+            // failure: CleanFailure.none(),
+            failure: null,
             valueChecking: false,
             languageList: const [],
             countryList: const [],
@@ -35,7 +38,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String email,
     required String password,
   }) async {
-    state = state.copyWith(loading: true, failure: CleanFailure.none());
+    state = state.copyWith(loading: true, failure: null);
     final data = await authRepo.login(
       email: email,
       password: password,
@@ -46,7 +49,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       (r) => state.copyWith(
         loading: false,
         userInfo: r,
-        failure: CleanFailure.none(),
+        // failure: CleanFailure.none(),
+        failure: null,
       ),
     );
 
@@ -66,7 +70,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
             return state.copyWith(
               loading: false,
               userInfo: r,
-              failure: CleanFailure.none(),
+              failure: null,
             );
           }
       );
@@ -76,7 +80,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   createRegistration(Registration registration) async {
-    state = state.copyWith(loading: true, failure: CleanFailure.none());
+    state = state.copyWith(loading: true, failure: null);
     final data = await authRepo.registration(registration);
 
     state = data.fold((l) => state.copyWith(loading: false, failure: l),
@@ -93,7 +97,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   passWordRecovery(Recovery recovery) async {
-    state = state.copyWith(loading: true, failure: CleanFailure.none());
+    state = state.copyWith(loading: true, failure: null);
     final data = await authRepo.passwordRecovary(recovery);
     state = data.fold((l) => state.copyWith(loading: false, failure: l),
         (r) => state.copyWith(loading: false));
@@ -107,7 +111,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   checkEmail(String email) async {
-    state = state.copyWith(valueChecking: true, failure: CleanFailure.none());
+    state = state.copyWith(valueChecking: true, failure: null);
     final data = await authRepo.emailCheck(email);
     state = data.fold((l) => state.copyWith(failure: l),
         (r) => state.copyWith(validEmail: r).copyWith(valueChecking: false));
