@@ -41,7 +41,8 @@ void main() async {
   // CleanApi.instance.setup(
   //   baseUrl: 'https://staging.taillz.com/api/v1/',
   // );
-  final BaseApi = Uri.https('staging.taillz.com', '/api/v1');
+  final baseUrl = Uri.https('staging.taillz.com', '/api/v1');
+  final BaseClient = http.Client();
 
   Constants.blocClass = BlocClass(true);
 

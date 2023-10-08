@@ -1,5 +1,6 @@
 // import 'package:clean_api/clean_api.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert' as conver;
 import 'package:fpdart/fpdart.dart';
 
 import 'package:email_validator/email_validator.dart';
@@ -12,38 +13,56 @@ import 'package:Taillz/domain/auth/models/recovery.dart';
 import 'package:Taillz/domain/auth/models/registration.dart';
 import 'package:Taillz/domain/auth/models/user_info.dart';
 
+import '../../main.dart';
+
 class AuthRepo extends IAuthRepo {
   // final cleanApi = CleanApi.instance;
-  final url = Uri.https('')
   @override
   Future<Either<FormatException, UserInfo>> login({
     required String email,
     required String password,
   }) async {
-    final response = await cleanApi.post(
-      showLogs: true,
-      fromData: (json) {
-        try {
-          return json['payload'] as String;
-        } catch (e) {
-          if ((json['errors'] as List).isNotEmpty) {
-            final error = (json['errors'] as List).first;
-            throw error['message'];
-          } else {
-            rethrow;
-          }
-        }
-      },
-      body: {'Email': email, 'Password': password},
-      endPoint: 'clients/login',
-    );
+    // final response = await cleanApi.post(
+    //   showLogs: true,
+    //   fromData: (json) {
+    //     try {
+    //       return json['payload'] as String;
+    //     } catch (e) {
+    //       if ((json['errors'] as List).isNotEmpty) {
+    //         final error = (json['errors'] as List).first;
+    //         throw error['message'];
+    //       } else {
+    //         rethrow;
+    //       }
+    //     }
+    //   },
+    //   body: {'Email': email, 'Password': password},
+    //   endPoint: 'clients/login',
+    // );
 
-    return await response.fold((l) => left(l), (r) async {
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString('token', r);
-      cleanApi.setHeader({'Authorization': 'Bearer $r'});
-      return await getUserInfo();
-    });
+    var request = http.Request('POST', Uri.parse(baseUrl + '/clients/login'));
+    // Set the request body
+    request.body = '{"Email": $email, "Password": $password}';
+
+    var response = await BaseClient.send(request);
+    
+    if (response.status == 200) {
+      var responseBody = await response.stream.bytesToString();
+    } else {
+      left('failure');
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('token', jsonResponse);
+    request.headers.addAll({ 'Authorization': 'Bearer $responseBody' });
+
+    return await getUserInfo();
+    // return await response.fold((l) => left(l), (r) async {
+    //   final prefs = await SharedPreferences.getInstance();
+    //   prefs.setString('token', r);
+    //   request.headers.addAll({'Authorization': 'Bearer $r'});
+    //   return await getUserInfo();
+    // });
   }
 
   @override
@@ -78,7 +97,7 @@ class AuthRepo extends IAuthRepo {
   }
 
   @override
-  Future<Either<CleanFailure, bool>> nickNameCheck(String nickname) async {
+  Future<Either<FormatException, bool>> nickNameCheck(String nickname) async {
     return await cleanApi.get(
         fromData: (json) => !(json['success'] ?? true),
         endPoint:
@@ -86,7 +105,7 @@ class AuthRepo extends IAuthRepo {
   }
 
   @override
-  Future<Either<CleanFailure, Unit>> passwordRecovary(Recovery recovery) async {
+  Future<Either<FormatException, Unit>> passwordRecovary(Recovery recovery) async {
     return await cleanApi.post(
         showLogs: true,
         fromData: (json) {
@@ -102,7 +121,7 @@ class AuthRepo extends IAuthRepo {
   }
 
   @override
-  Future<Either<CleanFailure, bool>> emailCheck(String email) async {
+  Future<Either<FormatException, bool>> emailCheck(String email) async {
     final bool isValid = EmailValidator.validate(email.trim());
     if (isValid) {
       return await cleanApi.get(
@@ -117,7 +136,7 @@ class AuthRepo extends IAuthRepo {
   }
 
   @override
-  Future<Either<CleanFailure, List<Countries>>> getCountries() async {
+  Future<Either<FormatException, List<Countries>>> getCountries() async {
     return await cleanApi.get(
         fromData: (json) => List<Countries>.from(
             json['payload'].map((e) => Countries.fromMap(e))),
@@ -125,7 +144,7 @@ class AuthRepo extends IAuthRepo {
   }
 
   @override
-  Future<Either<CleanFailure, List<Language>>> getLanguages() async {
+  Future<Either<FormatException, List<Language>>> getLanguages() async {
     return await cleanApi.get(
       fromData: (json) =>
           List<Language>.from(json['payload'].map((e) => Language.fromMap(e))),
@@ -134,7 +153,7 @@ class AuthRepo extends IAuthRepo {
   }
 
   @override
-  Future<Either<CleanFailure, List<ColorsModel>>> getColors() async {
+  Future<Either<FormatException, List<ColorsModel>>> getColors() async {
     return await cleanApi.get(
         showLogs: true,
         // withToken: false,
@@ -144,7 +163,7 @@ class AuthRepo extends IAuthRepo {
   }
 
   @override
-  Future<Either<CleanFailure, UserInfo>> tryLogin() async {
+  Future<Either<FormatException, UserInfo>> tryLogin() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final r = prefs.getString(
@@ -155,7 +174,7 @@ class AuthRepo extends IAuthRepo {
       return await getUserInfo();
     } catch (e) {
       return left(
-        CleanFailure(
+        FormatException(
           // tag: 'Initial login check',
           error: e.toString(),
         ),
