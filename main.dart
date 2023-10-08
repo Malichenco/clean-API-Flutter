@@ -42,7 +42,8 @@ void main() async {
   //   baseUrl: 'https://staging.taillz.com/api/v1/',
   // );
   final baseUrl = Uri.https('staging.taillz.com', '/api/v1');
-  final BaseClient = http.Client();
+  var BaseClient = http.Client();
+  var BaseRequest = http.request(baseUrl);
 
   Constants.blocClass = BlocClass(true);
 

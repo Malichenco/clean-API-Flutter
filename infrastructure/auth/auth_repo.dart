@@ -22,30 +22,14 @@ class AuthRepo extends IAuthRepo {
     required String email,
     required String password,
   }) async {
-    // final response = await cleanApi.post(
-    //   showLogs: true,
-    //   fromData: (json) {
-    //     try {
-    //       return json['payload'] as String;
-    //     } catch (e) {
-    //       if ((json['errors'] as List).isNotEmpty) {
-    //         final error = (json['errors'] as List).first;
-    //         throw error['message'];
-    //       } else {
-    //         rethrow;
-    //       }
-    //     }
-    //   },
-    //   body: {'Email': email, 'Password': password},
-    //   endPoint: 'clients/login',
-    // );
-
-    var request = http.Request('POST', Uri.parse(baseUrl + '/clients/login'));
+    BaseRequest.url = Uri.parse(baseUrl + '/clients/login');
     // Set the request body
-    request.body = '{"Email": $email, "Password": $password}';
+    BaseRequest.body = '{
+      "Email": $email, 
+      "Password": $password
+    }';
 
-    var response = await BaseClient.send(request);
-    
+    final response = await BaseClient.post(BaseRequest);
     if (response.status == 200) {
       var responseBody = await response.stream.bytesToString();
     } else {
@@ -54,82 +38,79 @@ class AuthRepo extends IAuthRepo {
 
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('token', jsonResponse);
-    request.headers.addAll({ 'Authorization': 'Bearer $responseBody' });
+    BaseRequest.headers.addAll({ 
+      'Authorization': 'Bearer $responseBody' 
+    });
+    BaseClient.close();
 
     return await getUserInfo();
-    // return await response.fold((l) => left(l), (r) async {
-    //   final prefs = await SharedPreferences.getInstance();
-    //   prefs.setString('token', r);
-    //   request.headers.addAll({'Authorization': 'Bearer $r'});
-    //   return await getUserInfo();
-    // });
   }
 
   @override
   Future<Either<FormatException, UserInfo>> getUserInfo() async {
-    return await cleanApi.get(
-      showLogs: true,
-      fromData: ((json) => UserInfo.fromMap(json['payload'])),
-      endPoint: 'clients/info',
-    );
+    BaseRequest.url = Uri.parse(baseUrl + '/clients/info');
+    final response = await BaseClient.get(BaseRequest);
+    UserInfo.fromMap(response['payload']);
+    
+    return response;
   }
 
   @override
   Future<Either<FormatException, Unit>> registration(
       Registration registration) async {
-    return await cleanApi.post(
-        fromData: (json) {
-          // final error = json['errors'];
-          // final payload = json['payload'];
-          // Logger().i(json);
+    // return await cleanApi.post(
+    //     fromData: (json) {
+    //       // final error = json['errors'];
+    //       // final payload = json['payload'];
+    //       // Logger().i(json);
 
-          return unit;
-        },
-        body: registration.toMap(),
-        endPoint: 'clients');
+    //       return unit;
+    //     },
+    //     body: registration.toMap(),
+    //     endPoint: 'clients');
+    return await BaseClient.post(
+      Uri.https('${baseUrl}/clients'),
+      body: registration.toMap()
+    ); 
   }
 
   @override
   Future<void> logOut() async {
-    cleanApi.setHeader({'Authorization': ''});
+    BaseRequest.headers.addAll({'Authorization': ''});
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('token', '');
   }
 
   @override
   Future<Either<FormatException, bool>> nickNameCheck(String nickname) async {
-    return await cleanApi.get(
-        fromData: (json) => !(json['success'] ?? true),
-        endPoint:
-            'clients/hiddenSearchByNick/${Uri.encodeComponent(nickname)}');
+    BaseRequest.url = Uri.parse('${baseUrl}/clients/hiddenSearchByNick/${Uri.encodeComponent(nickname)}');
+    var response = await BaseClient.get(BaseRequest);
+    var responseBody = await response.stream.bytesToString();
+    BaseClient.close();
+
+    return !(responseBody['success'] ?? true);
   }
 
   @override
   Future<Either<FormatException, Unit>> passwordRecovary(Recovery recovery) async {
-    return await cleanApi.post(
-        showLogs: true,
-        fromData: (json) {
-          if ((json['errors'] as List).isNotEmpty) {
-            final error = (json['errors'] as List).first;
-            throw error['message'];
-          } else {
-            return unit;
-          }
-        },
-        body: recovery.toMap(),
-        endPoint: 'clients/Recovery');
+    BaseRequest.url = Uri.parse('${baseUrl}/clients/Recovery');
+    BaseRequest.body = recovery.toMap();
+    var response = await BaseClient.post(BaseRequest);
+    BaseClient.close();
+
+    return response;
   }
 
   @override
   Future<Either<FormatException, bool>> emailCheck(String email) async {
     final bool isValid = EmailValidator.validate(email.trim());
     if (isValid) {
-      return await cleanApi.get(
-          fromData: (json) {
-            return !(json['success'] ?? true);
-          },
-          endPoint:
-              'clients/hiddenSearchByEmail/${Uri.encodeComponent(email)}');
+      var url = Uri.parse(
+        '${baseUrl}/clients/hiddenSearchByEmail/${Uri.encodeComponent(email)}'
+      );
+      var headers = {'Content-type': 'application/json'};
+
+      return await http.get(url, headers: headers);
     } else {
       return right(isValid);
     }
@@ -137,29 +118,29 @@ class AuthRepo extends IAuthRepo {
 
   @override
   Future<Either<FormatException, List<Countries>>> getCountries() async {
-    return await cleanApi.get(
-        fromData: (json) => List<Countries>.from(
-            json['payload'].map((e) => Countries.fromMap(e))),
-        endPoint: 'lists/countries');
+    var url = Uri.https(baseUrl, 'lists/countries');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      List<Countries>.from(response['payload'].map((e) => Countries.fromMap(e)));
+    }
+    return response;
   }
 
   @override
   Future<Either<FormatException, List<Language>>> getLanguages() async {
-    return await cleanApi.get(
-      fromData: (json) =>
-          List<Language>.from(json['payload'].map((e) => Language.fromMap(e))),
-      endPoint: 'lists/languages',
-    );
+    BaseRequest.url = Uri.parse('${baseUrl}/lists/languages');
+    final response = await BaseClient.get(BaseRequest);
+    List<Language>.from(response['payload'].map((e) => Language.fromMap(e)));
+    BaseClient.close();
+    
+    return response;
   }
 
   @override
   Future<Either<FormatException, List<ColorsModel>>> getColors() async {
-    return await cleanApi.get(
-        showLogs: true,
-        // withToken: false,
-        fromData: (json) => List<ColorsModel>.from(
-            json['payload'].map((e) => ColorsModel.fromMap(e))),
-        endPoint: 'lists/colors');
+    final response = http.get(baseUrl, 'lists/colors');
+    List<ColorsModel>.from(response['payload'].map((e) => ColorsModel.fromMap(e)));
+    return response;
   }
 
   @override
@@ -169,8 +150,7 @@ class AuthRepo extends IAuthRepo {
       final r = prefs.getString(
         'token',
       );
-
-      cleanApi.setHeader({'Authorization': 'Bearer $r'});
+      BaseRequest.headers.addAll({'Authorization': 'Bearer $r'});
       return await getUserInfo();
     } catch (e) {
       return left(
