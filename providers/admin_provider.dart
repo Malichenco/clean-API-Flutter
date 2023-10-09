@@ -7,7 +7,6 @@ import 'package:Taillz/utills/api_network.dart';
 import 'package:Taillz/utills/constant.dart';
 import 'package:bot_toast/bot_toast.dart';
 
-// import 'package:clean_api/clean_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';

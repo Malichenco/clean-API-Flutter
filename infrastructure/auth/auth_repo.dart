@@ -1,6 +1,5 @@
-// import 'package:clean_api/clean_api.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert' as conver;
+import 'dart:convert' as convert;
 import 'package:fpdart/fpdart.dart';
 
 import 'package:email_validator/email_validator.dart';

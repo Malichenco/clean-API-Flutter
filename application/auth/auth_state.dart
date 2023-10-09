@@ -1,4 +1,3 @@
-// import 'package:clean_api/clean_api.dart';
 import 'package:equatable/equatable.dart';
 
 import 'package:Taillz/domain/auth/models/colors.dart';
