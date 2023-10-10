@@ -1,6 +1,7 @@
 import 'package:Taillz/application/pole/pole_state.dart';
 import 'package:Taillz/infrastructure/pole/pole_repo.dart';
-import 'package:clean_api/clean_api.dart';
+
+import 'package:fpdar'
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:Taillz/domain/auth/models/user_info.dart';
 
